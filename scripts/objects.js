@@ -27,6 +27,9 @@ objects.add = function(object) {
 }
 
 objects.map = function(args) {
+  if(args.orderBy)
+    objects.updateList.sort(args.orderBy);
+
   var f = args.f;
   for(var i = 0; i < objects.updateList.length; i++) {
     f(objects.updateList[i], i);

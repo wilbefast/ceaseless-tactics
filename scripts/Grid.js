@@ -4,6 +4,8 @@
 
 function Grid(n_cols, n_rows, hex_class) {
 
+  this.hex_class = hex_class;
+
   // build hexes
   this.n_cols = n_cols;
   this.n_rows = n_rows;
@@ -14,8 +16,6 @@ function Grid(n_cols, n_rows, hex_class) {
         this.hexes[col + (this.n_cols + this.n_rows)*row] = new hex_class(this, col, row);
     }
   }
-  this.draw_w = this.n_cols*hex_class.prototype.draw_size
-  this.draw_h = this.n_rows*(hex_class.prototype.draw_size*0.75)
 
   // cache neighbourhoods
   for(var i = 0; i < this.hexes.length; i++)
@@ -34,11 +34,13 @@ function Grid(n_cols, n_rows, hex_class) {
     }
   }
 
+  this.update(0);
+
   return this;
 }
 
 Grid.prototype.isValidAxial = function(col, row) {
-  return ((2*col + row >= this.n_rows) && (col + row/2 <= this.n_cols + this.n_rows*0.5));
+  return ((2*col + row >= this.n_rows) && (col + row/2 < this.n_cols + this.n_rows*0.5));
 }
 
 Grid.prototype.axialToHex = function(col, row) {
@@ -98,8 +100,15 @@ Grid.prototype.draw = function() {
 };
 
 Grid.prototype.update = function(dt) {
-  this.draw_x = - this.draw_w/3;
-  this.draw_y = (ctx.canvas.height - this.draw_h)*0.5;
+
+  // global scaling
+  Hex.prototype.draw_size = Math.min(window.innerWidth / this.n_cols, window.innerHeight / this.n_rows);
+  Unit.prototype.draw_size = Hex.prototype.draw_size * 0.75;
+  this.draw_w = this.n_cols*this.hex_class.prototype.draw_size*3; // *2
+  this.draw_h = this.n_rows*this.hex_class.prototype.draw_size*0.75;
+
+  this.draw_x = (window.innerWidth - this.draw_w)*0.5;
+  this.draw_y = (window.innerHeight - this.draw_h)*0.5;
 
   for(var i = 0; i < this.hexes.length; i++)
   {

@@ -3,23 +3,24 @@
 // ----------------------------------------------------------------------------
 
 function Unit(args) {
+
+  // depends on the type of unit
+  this.image = args.team.images.pawn;
+  this.speed = Math.floor(Math.random()*20);
+  this.max_moves = Math.max(1, Math.floor(this.speed / 4));
+
+  // same for all units
   this.hex = args.hex;
   this.hex.contents = this;
-
   this.team = args.team;
-  this.image = this.team.images.Unit;
-
   this.path = [];
-
-  this.max_moves = 4;
-
   objects.add(this);
 
   return this;
 }
 
-Unit.prototype.draw_w = 40
-Unit.prototype.draw_h = 40
+Unit.prototype.draw_size = 40
+Unit.prototype.draw_size = 40
 
 Unit.prototype.draw = function(x, y) {
   x = (x || 0);
@@ -45,12 +46,12 @@ Unit.prototype.draw = function(x, y) {
   }
 
   // always draw sprite
-  ctx.drawImage(this.image, this.draw_x + x, this.draw_y + y, this.draw_w, this.draw_h);
+  ctx.drawImage(this.image, this.draw_x + x, this.draw_y + y, this.draw_size, this.draw_size);
 }
 
 Unit.prototype.update = function(dt) {
-  this.draw_x = this.hex.draw_x + (this.hex.draw_size - this.draw_w)*0.5;
-  this.draw_y = this.hex.draw_y + (this.hex.draw_size - this.draw_h)*0.5;
+  this.draw_x = this.hex.draw_x + (this.hex.draw_size - this.draw_size)*0.5;
+  this.draw_y = this.hex.draw_y + (this.hex.draw_size - this.draw_size)*0.5;
 }
 
 Unit.prototype.setHex = function(hex) {
