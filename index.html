@@ -1,0 +1,42 @@
+<html>
+
+<head>
+  <script type="text/javascript">
+    window.onload = function() {
+      ctx = document.getElementsByTagName("canvas")[0].getContext("2d");
+      main();
+    }
+  </script>
+
+  <script type="text/javascript" src="scripts/useful.js" defer="true"></script>
+  <script type="text/javascript" src="scripts/Vector.js" defer="true"></script>
+  <script type="text/javascript" src="scripts/Hex.js" defer="true"></script>
+  <script type="text/javascript" src="scripts/Grid.js" defer="true"></script>
+  <script type="text/javascript" src="scripts/objects.js" defer="true"></script>
+  <script type="text/javascript" src="scripts/Team.js" defer="true"></script>
+  <script type="text/javascript" src="scripts/Unit.js" defer="true"></script>
+  <script type="text/javascript" src="scripts/Turn.js" defer="true"></script>
+  <script type="text/javascript" src="scripts/cursor.js" defer="true"></script>
+  <script type="text/javascript" src="scripts/main.js" defer="true"></script>
+</head>
+
+<body style="margin:0;padding:0">
+  <canvas width="1280" height="720" style="width:100%;height:100%;background-color:cyan;cursor:none">
+  </canvas>
+
+  <div style="display:none">
+    <img id="img_hex" src="images/hex.png" />
+    <img id="img_hex_highlight" src="images/hex_highlight.png" />
+    <img id="img_hex_danger" src="images/hex_danger.png" />
+    <img id="img_hex_combat" src="images/hex_combat.png" />
+    <img id="img_hex_preview" src="images/hex_preview.png" />
+    <img id="img_unit_red" src="images/unit_red.png" />
+    <img id="img_unit_blue" src="images/unit_blue.png" />
+    <img id="img_cursor" src="images/cursor.png" />
+    <img id="img_button" src="images/button.png" />
+    <img id="img_button_highlight" src="images/button_highlight.png" />
+  </div>
+
+</body>
+
+</html>
