@@ -65,12 +65,16 @@ Hex.prototype.draw = function() {
 }
 
 Hex.prototype.draw_preview = function() {
-  if(!cursor.selection || !cursor.selection.canEnter(this))
+  if(!cursor.selection)
     return;
+    
+  if(!cursor.selection.isInCombat() && !cursor.selection.canEnter(this))
+    return;
+
   ctx.globalAlpha  = 0.75;
   if(cursor.selection.isInCombat(this))
     ctx.drawImage(this.image_preview_combat, this.draw_x, this.draw_y, this.draw_size, this.draw_size);
-  else if(cursor.selection.isRetreating())
+  else if(cursor.selection.isRetreating() || cursor.selection.isInCombat())
     ctx.drawImage(this.image_preview_retreat, this.draw_x, this.draw_y, this.draw_size, this.draw_size);
   else
     ctx.drawImage(this.image_preview_normal, this.draw_x, this.draw_y, this.draw_size, this.draw_size);

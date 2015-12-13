@@ -21,33 +21,45 @@ cursor.moveTo = function(x, y) {
     if(cursor.selection && (cursor.selection.team == turn.currentTeam) && cursor.path && new_hex)
     {
       var selectedUnit = cursor.selection;
-      var path = cursor.path;
 
-      var new_path = grid.hexPath({
-        startHex : selectedUnit.hex, 
-        endHex : new_hex, 
-        unit : selectedUnit
-      });
-      new_path.shift();
-
-      path.length = 0;
-      var totalCost = 0;
-      while(new_path.length > 0 && ((totalCost += selectedUnit.pathingCost(new_path[0])) <= selectedUnit.max_moves))
-        path.push(new_path.shift());
-
-      var path_tip = (path.length == 0) ? selectedUnit.hex : path[path.length - 1];
-      if(path.type != "retreat")
+      if(new_hex.contents)
       {
-        var is_charge = path_tip.hasNeighbourSuchThat(function(hex) {
-          return hex.contents && selectedUnit.canCharge(hex.contents);
-        });
-        if(is_charge)
-          path.type = "charge";
-        else
-          path.type = null;
+        if(selectedUnit.canTarget(new_hex.contents))
+          selectedUnit.setTarget(cursor.hex.contents);
       }
-      var sign = Math.sign(path_tip.draw_x - selectedUnit.hex.draw_x);
-      selectedUnit.facing = sign || selectedUnit.team.initialFacing;
+      else
+      {
+        var path = cursor.path;
+
+        selectedUnit.setTarget(null);
+        selectedUnit.path = path;
+
+        var new_path = grid.hexPath({
+          startHex : selectedUnit.hex, 
+          endHex : new_hex, 
+          unit : selectedUnit
+        });
+        new_path.shift();
+
+        path.length = 0;
+        var totalCost = 0;
+        while(new_path.length > 0 && ((totalCost += selectedUnit.pathingCost(new_path[0])) <= selectedUnit.max_moves))
+          path.push(new_path.shift());
+
+        var path_tip = (path.length == 0) ? selectedUnit.hex : path[path.length - 1];
+        if(path.type != "retreat")
+        {
+          var is_charge = path_tip.hasNeighbourSuchThat(function(hex) {
+            return hex.contents && selectedUnit.canCharge(hex.contents);
+          });
+          if(is_charge)
+            path.type = "charge";
+          else
+            path.type = null;
+        }
+        var sign = Math.sign(path_tip.draw_x - selectedUnit.hex.draw_x);
+        selectedUnit.facing = sign || selectedUnit.team.initialFacing;
+      }
     }
   }
 
@@ -73,9 +85,13 @@ cursor.leftClick = function() {
     {
       cursor.selection = selection;
 
+
       // start a new path for units under my control
       if(selection.team == turn.currentTeam)
+      {
+        selection.setTarget(null);
         cursor.path = selection.path = [];
+      }
 
       // for the purpose of calculating the preview we need to set the path type
       if(selection.isInCombat())
@@ -116,6 +132,7 @@ cursor.rightClick = function() {
 cursor.clearSelection = function() {
   if(cursor.selection)
   {
+    cursor.selection.setTarget(null);
     cursor.selection.path = [];
     cursor.selection = null;
   }

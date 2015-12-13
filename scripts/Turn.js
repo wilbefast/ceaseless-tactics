@@ -14,7 +14,7 @@ turn.draw = function() {
   
   if(turn.currentTeam)
   {
-    ctx.fillText((turn.currentTeam.name + " turn " + turn.count + " / 6").firstToUpper(), ctx.canvas.width - 32, 64);
+    //ctx.fillText((turn.currentTeam.name + " turn " + turn.count + " / 6").firstToUpper(), ctx.canvas.width - 32, 64);
 
     ctx.drawImage(turn.buttonHovered 
       ? turn.button_highlight_image 
@@ -69,14 +69,16 @@ turn.end = function() {
 
     babysitter.add(function*(dt) {
 
-      yield * babysitter.waitForSeconds(1.0);
+      yield * babysitter.waitForSeconds(1.5);
 
       for(var i = 0; i < units.length; i++)
       {
         var unit = units[i];
 
-        if(unit.path.length > 0)
-          yield * babysitter.waitForSeconds(0.5);
+        if(unit.path.length > 0 || unit.hasTarget())
+          yield * babysitter.waitForSeconds(0.3);
+        if(unit.purge)
+          break;
 
         // pop path nodes as far as we can
         while(unit.path.length > 0)
@@ -95,6 +97,8 @@ turn.end = function() {
             yield * babysitter.doForSeconds(0.2, function(t) {
               unit.transition = t;
             });
+            if(unit.purge)
+              break;
 
             unit.setHex(hex);
             unit.path.shift();
@@ -104,20 +108,32 @@ turn.end = function() {
         }
 
         // interrupt actions at target destination
-        if(unit.isInCombat() && unit.isCharging())
+        if((unit.isInCombat() && unit.isCharging() || unit.hasTarget()))
         {
-          unit.attacking = true;
-          yield * babysitter.waitForSeconds(0.2);
-          unit.attacking = false;
-
+          var target = unit.target;
           unit.hex.mapToNeighbours(function(hex) {
             if(hex.contents && hex.contents.isInCombat() && unit.isEnemyOf(hex.contents))
             {
               if(!hex.contents.isRetreating())
                 hex.contents.path.length = 0;
-              hex.contents.takeDamage(unit.damage)
+              if(!target)
+                target = hex.contents;
             } 
           });
+
+          // combat attack
+          unit.doAttack(target);
+          yield * babysitter.waitForSeconds(0.3);
+          if(unit.purge)
+            break;
+        }
+        else if(unit.hasTarget())
+        {
+          // ranged attack
+          unit.doAttack(target);
+          yield * babysitter.waitForSeconds(0.3);
+          if(unit.purge)
+            break;
         }
       }
 
@@ -134,7 +150,7 @@ turn.end = function() {
       if(turn.currentTeam.aiControlled)
       {
         // TODO - AI
-        turn.end();
+        //turn.end();
       }
     });
   }
@@ -145,7 +161,7 @@ turn.end = function() {
     if(turn.currentTeam.aiControlled)
     {
       // TODO - AI
-      turn.end();
+      //turn.end();
     }
   }
 }

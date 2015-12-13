@@ -25,6 +25,7 @@ function Unit(args) {
   this.path = [];
   this.transition = 0;
   objects.add(this);
+  this.pain = 0;
 
   // depends on team
   this.facing = this.team.initialFacing;
@@ -38,25 +39,29 @@ function Unit(args) {
 Unit.prototype.draw_w = 32
 Unit.prototype.draw_h = 64
 
+Unit.prototype.surrounded_image = document.getElementById("img_unit_surrounded");
 
 Unit.prototype.shadow_image = document.getElementById("img_unit_shadow");
 Unit.prototype.shadow_selected_image = document.getElementById("img_unit_shadow_selected");
 
 Unit.prototype.path_normal_image = document.getElementById("img_unit_path_normal");
-Unit.prototype.path_normal_image_end = document.getElementById("img_unit_path_normal_end");
+Unit.prototype.path_normal_end_image = document.getElementById("img_unit_path_normal_end");
 Unit.prototype.path_charge_image = document.getElementById("img_unit_path_charge");
-Unit.prototype.path_charge_image_end = document.getElementById("img_unit_path_charge_end");
+Unit.prototype.path_charge_end_image = document.getElementById("img_unit_path_charge_end");
 Unit.prototype.path_retreat_image = document.getElementById("img_unit_path_retreat");
-Unit.prototype.path_retreat_image_end = document.getElementById("img_unit_path_retreat_end");
+Unit.prototype.path_retreat_end_image = document.getElementById("img_unit_path_retreat_end");
+
+Unit.prototype.attack_combat_image = document.getElementById("img_attack_combat");
+Unit.prototype.attack_ranged_image = document.getElementById("img_attack_ranged");
 
 Unit.prototype.path_images = {
   charge : {
     node : Unit.prototype.path_charge_image,
-    end : Unit.prototype.path_charge_image_end
+    end : Unit.prototype.path_charge_end_image
   },
   retreat : {
     node : Unit.prototype.path_retreat_image,
-    end : Unit.prototype.path_retreat_image_end
+    end : Unit.prototype.path_retreat_end_image
   }
 }
 
@@ -92,11 +97,12 @@ Unit.prototype.draw = function(x, y) {
   // draw path only if it's this unit's turn
   if(!turn.currentTeam || (turn.currentTeam == this.team))
   {
+    // path
     if(this.path.length > 0)
     {
       var prev_hex = this.hex;
       var image_node = (this.path_images[this.path.type] && this.path_images[this.path.type].node || this.path_normal_image);
-      var image_end = (this.path_images[this.path.type] && this.path_images[this.path.type].end || this.path_normal_image_end);
+      var image_end = (this.path_images[this.path.type] && this.path_images[this.path.type].end || this.path_normal_end_image);
       for(var i = 0; i < this.path.length; i++)
       {
         hex = this.path[i];
@@ -120,50 +126,77 @@ Unit.prototype.draw = function(x, y) {
         prev_hex = hex;
       }
     } 
+
+    // target
+    if(this.hasTarget())
+    {
+      var distance = this.hex.distanceTo(this.target.hex);
+      var tx = useful.lerp(this.hex.draw_x, this.target.hex.draw_x, 0.5 / (distance));
+      var ty = useful.lerp(this.hex.draw_y, this.target.hex.draw_y, 0.5 / (distance));
+      ctx.drawImage(this.attackRange > 1 ? this.attack_ranged_image : this.attack_combat_image, 
+        tx + this.hex.draw_size*0.5 - 11, 
+        ty + this.hex.draw_size*0.5 - (this.hex.isHill ? 12 : 0) - 11, 
+        22, 
+        22);
+    }
   }
 
-  // always draw sprite
-  var off_y = this.attacking ? 0 : Math.cos(this.breath*Math.PI*2);
-  var bounce_y = 3*Math.sin(this.transition*Math.PI*2);
-  ctx.save();
-  ctx.scale(this.facing, 1);
-    ctx.drawImage(cursor.selection == this ? this.shadow_selected_image : this.shadow_image, 
-      this.facing*this.draw_x + x - (this.facing < 0 ? this.draw_w : 0), 
-      this.draw_y + y + 40 - (this.hex.isHill ? 12 : 0), 
-      this.draw_w, 
-      this.draw_h / 3);
+  // always draw sprite... unless flashing from pain
+  if(!(this.pain & 2))
+  {
+    var off_y = this.attacking || (this.pain > 0) ? 0 : Math.cos(this.breath*Math.PI*2);
+    var bounce_y = 3*Math.sin(this.transition*Math.PI*2);
     ctx.save();
-      ctx.translate(
-        this.facing*this.draw_x + x - (this.facing < 0 ? this.draw_w : 0) - 18,
-        this.draw_y + y + bounce_y - 8 - (this.hex.isHill ? 12 : 0) - off_y - 52);
-      if(this.attacking)
-      {
-        ctx.translate(142, 64);
-        ctx.rotate(Math.PI/2);
-      }
-      ctx.drawImage(this.weapon_image, 
-        18, 
-        52, 
-        this.draw_w, 
-        this.draw_h);
-     ctx.restore();
-    ctx.drawImage(this.body_image, 
-      this.facing*this.draw_x + x - (this.facing < 0 ? this.draw_w : 0), 
-      this.draw_y + y + bounce_y - 8 - (this.hex.isHill ? 12 : 0), 
-      this.draw_w, 
-      this.draw_h);
-    ctx.drawImage(this.head_image, 
-      this.facing*this.draw_x + x - (this.facing < 0 ? this.draw_w : 0), 
-      this.draw_y + y + bounce_y - 8 - (this.hex.isHill ? 12 : 0) + off_y, 
-      this.draw_w, 
-      this.draw_h);
-    if(this.hitpoints > this.unitType.hitpoints*0.5)
-      ctx.drawImage(this.offhand_image, 
+    ctx.scale(this.facing, 1);
+      ctx.drawImage(cursor.selection == this ? this.shadow_selected_image : this.shadow_image, 
         this.facing*this.draw_x + x - (this.facing < 0 ? this.draw_w : 0), 
-        this.draw_y + y + bounce_y - 8 - (this.hex.isHill ? 12 : 0) - off_y, 
+        this.draw_y + y + 40 - (this.hex.isHill ? 12 : 0), 
+        this.draw_w, 
+        this.draw_h / 3);
+      ctx.save();
+        ctx.translate(
+          this.facing*this.draw_x + x - (this.facing < 0 ? this.draw_w : 0) - 18,
+          this.draw_y + y + bounce_y - 8 - (this.hex.isHill ? 12 : 0) - off_y - 52);
+        if(this.attacking)
+        {
+          ctx.translate(142, 64);
+          ctx.rotate(Math.PI/2);
+        }
+        if(this.hitpoints > 0)
+          ctx.drawImage(this.weapon_image, 
+            18, 
+            52, 
+            this.draw_w, 
+            this.draw_h);
+       ctx.restore();
+      ctx.drawImage(this.body_image, 
+        this.facing*this.draw_x + x - (this.facing < 0 ? this.draw_w : 0), 
+        this.draw_y + y + bounce_y - 8 - (this.hex.isHill ? 12 : 0), 
         this.draw_w, 
         this.draw_h);
-  ctx.restore();
+      ctx.drawImage(this.head_image, 
+        this.facing*this.draw_x + x - (this.facing < 0 ? this.draw_w : 0), 
+        this.draw_y + y + bounce_y - 8 - (this.hex.isHill ? 12 : 0) + off_y, 
+        this.draw_w, 
+        this.draw_h);
+      if(this.hitpoints > this.unitType.hitpoints*0.5)
+        ctx.drawImage(this.offhand_image, 
+          this.facing*this.draw_x + x - (this.facing < 0 ? this.draw_w : 0), 
+          this.draw_y + y + bounce_y - 8 - (this.hex.isHill ? 12 : 0) - off_y, 
+          this.draw_w, 
+          this.draw_h);
+    ctx.restore();
+  }
+
+  // surrounded
+  if(this.isSurrounded())
+  {
+    ctx.drawImage(this.surrounded_image, 
+      this.draw_x + this.hex.draw_size*0.5 - 24, 
+      this.draw_y + this.hex.draw_size*0.5 - (this.hex.isHill ? 12 : 0) - 24, 
+      16, 
+      16);
+  }
 
   if(this.isSelected())
   {  
@@ -256,10 +289,41 @@ Unit.prototype.pathingCost = function(hex) {
     return 1;
 }
 
+Unit.prototype.doAttack = function(target) {
+  if(!target || !this.canTarget(target))
+    return;
+
+  var self = this;
+  babysitter.add(function*(dt) {
+    self.attacking = true;
+    yield * babysitter.waitForSeconds(0.2);
+    if(self.purge)
+      return;
+    self.attacking = false;
+
+    var damage = self.damage;
+    if(target.isSurrounded())
+      damage *= 2;
+    if(target.hex.isHill && !self.hex.isHill)
+      damage *= 0.5;
+    target.takeDamage(damage);
+  });
+}
+
 Unit.prototype.takeDamage = function(amount) {
   this.hitpoints -= amount;
-  if(this.hitpoints <= 0)
-    this.purge = true;
+
+  this.pain = 7;
+  var self = this;
+  babysitter.add(function*(dt) {
+    while(self.pain > 0)
+    {
+      yield * babysitter.waitForSeconds(0.1);
+      self.pain--;
+    }
+    if(self.hitpoints <= 0)
+      self.purge = true;
+  });
 }
 
 Unit.prototype.canTarget = function(unit) {
@@ -274,11 +338,12 @@ Unit.prototype.canTarget = function(unit) {
 }
 
 Unit.prototype.setTarget = function(unit) {
+  this.path = [];
   this.target = unit;
 }
 
 Unit.prototype.hasTarget = function() {
-  return (this.target != null);
+  return (this.target && !this.target.purge);
 }
 
 Unit.prototype.onPurge = function() {
@@ -288,4 +353,11 @@ Unit.prototype.onPurge = function() {
 
 Unit.prototype.isSelected = function() {
   return (this == cursor.selection);
+}
+
+Unit.prototype.isSurrounded = function() {
+  var self = this;
+  return !this.hex.hasNeighbourSuchThat(function(hex) {
+    return !self.isInCombat(hex);
+  })
 }
