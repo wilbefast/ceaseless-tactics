@@ -8,7 +8,7 @@ var main = function() {
   // INITIALISE
   // ----------------------------------------------------------------------------
 
-  grid = new Grid(12, 12, Hex);
+  grid = new Grid(10, 9, Hex);
 
   turn.currentTeam = Team.red;
 

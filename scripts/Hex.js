@@ -40,8 +40,9 @@ Hex.prototype.hill_images = [
 ];
 
 Hex.prototype.image_highlight = document.getElementById("img_hex_highlight");
-Hex.prototype.image_combat = document.getElementById("img_hex_combat");
-Hex.prototype.image_preview = document.getElementById("img_hex_preview");
+Hex.prototype.image_preview_combat = document.getElementById("img_hex_preview_combat");
+Hex.prototype.image_preview_retreat = document.getElementById("img_hex_preview_retreat");
+Hex.prototype.image_preview_normal = document.getElementById("img_hex_preview_normal");
 
 Hex.prototype.spacing = 0.7;
 
@@ -66,11 +67,13 @@ Hex.prototype.draw = function() {
 Hex.prototype.draw_preview = function() {
   if(!cursor.selection || !cursor.selection.canEnter(this))
     return;
-  ctx.globalAlpha  = 0.5;
+  ctx.globalAlpha  = 0.75;
   if(cursor.selection.isInCombat(this))
-    ctx.drawImage(this.image_combat, this.draw_x, this.draw_y, this.draw_size, this.draw_size);
+    ctx.drawImage(this.image_preview_combat, this.draw_x, this.draw_y, this.draw_size, this.draw_size);
+  else if(cursor.selection.isRetreating())
+    ctx.drawImage(this.image_preview_retreat, this.draw_x, this.draw_y, this.draw_size, this.draw_size);
   else
-    ctx.drawImage(this.image_preview, this.draw_x, this.draw_y, this.draw_size, this.draw_size);
+    ctx.drawImage(this.image_preview_normal, this.draw_x, this.draw_y, this.draw_size, this.draw_size);
   ctx.globalAlpha = 1;
 }
 

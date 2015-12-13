@@ -33,6 +33,20 @@ babysitter.waitForSeconds = function* (duration_s)
   return dt;
 }
 
+babysitter.doForSeconds = function* (duration_s, f)
+{
+  var duration_ms = duration_s*1000;
+  var start_ms = Date.now();
+  var dt = 0.0;
+  while(Date.now() - start_ms < duration_ms)
+  {
+    var t = (Date.now() - start_ms) / duration_ms;
+    f(t);
+    dt = yield undefined;
+  }
+  return dt;
+}
+
 babysitter.update = function(dt)
 {
   // this is where I'd really love J. Blow's 'remove' primitive...

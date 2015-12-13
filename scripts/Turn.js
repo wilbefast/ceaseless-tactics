@@ -75,17 +75,22 @@ turn.end = function() {
         {
           // make sure it's actually possible to leave the current tile
           if(!unit.canLeave())
-          {
-            console.log("no escape");
             break;
-          }
-
-          yield * babysitter.waitForSeconds(0.1);
 
           // move to the next tile
-          var hex = unit.path.shift();
+          var hex = unit.path[0];
           if(unit.canEnter(hex) && (!unit.isInCombat(hex) || unit.isCharging()))
+          {
+            unit.next_hex = hex;
+            unit.transition = 0;
+
+            yield * babysitter.doForSeconds(0.2, function(t) {
+              unit.transition = t;
+            });
+
             unit.setHex(hex);
+            unit.path.shift();
+          }
         }
 
         // interrupt actions at target destination

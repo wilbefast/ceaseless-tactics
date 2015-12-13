@@ -28,10 +28,13 @@ cursor.moveTo = function(x, y) {
         endHex : new_hex, 
         unit : selectedUnit
       });
+      new_path.shift();
 
       path.length = 0;
-      for(var i = 0; i <= Math.min(new_path.length - 1, selectedUnit.max_moves); i++)
-        path[i] = new_path[i];
+      var totalCost = 0;
+      while(new_path.length > 0 && ((totalCost += selectedUnit.pathingCost(new_path[0])) <= selectedUnit.max_moves))
+        path.push(new_path.shift());
+
       var path_tip = (path.length == 0) ? selectedUnit.hex : path[path.length - 1];
       if(path.type != "retreat")
       {
@@ -39,7 +42,9 @@ cursor.moveTo = function(x, y) {
           return hex.contents && selectedUnit.canCharge(hex.contents);
         });
         if(is_charge)
-          path.type = "charge"; 
+          path.type = "charge";
+        else
+          path.type = null;
       }
       var sign = Math.sign(path_tip.draw_x - selectedUnit.hex.draw_x);
       selectedUnit.facing = sign || selectedUnit.team.initialFacing;
