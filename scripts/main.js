@@ -1,3 +1,6 @@
+// ----------------------------------------------------------------------------
+// SETUP AND MAIN LOOP
+// ----------------------------------------------------------------------------
 
 var main = function() {
 
@@ -5,36 +8,42 @@ var main = function() {
   // INITIALISE
   // ----------------------------------------------------------------------------
 
-  grid = new Grid(6, 12, Hex);
+  grid = new Grid(12, 12, Hex);
 
   turn.currentTeam = Team.red;
 
   // red team units
   new Unit({
     hex : grid.orthoToHex(1, Math.floor(grid.n_rows / 2) - 2),
-    team : Team.red
+    team : Team.red,
+    type : Unit.prototype.infantry
   });
   new Unit({
     hex : grid.orthoToHex(1, Math.floor(grid.n_rows / 2)),
-    team : Team.red
+    team : Team.red,
+    type : Unit.prototype.infantry
   });
   new Unit({
     hex : grid.orthoToHex(1, Math.floor(grid.n_rows / 2) + 2),
-    team : Team.red
+    team : Team.red,
+    type : Unit.prototype.infantry
   });
 
   // blue team units
   new Unit({
     hex : grid.orthoToHex(grid.n_cols - 2, Math.floor(grid.n_rows / 2) - 2),
-    team : Team.blue
+    team : Team.blue,
+    type : Unit.prototype.infantry
   });
   new Unit({
     hex : grid.orthoToHex(grid.n_cols - 2, Math.floor(grid.n_rows / 2)),
-    team : Team.blue
+    team : Team.blue,
+    type : Unit.prototype.infantry
   });
   new Unit({
     hex : grid.orthoToHex(grid.n_cols - 2, Math.floor(grid.n_rows / 2) + 2),
-    team : Team.blue
+    team : Team.blue,
+    type : Unit.prototype.infantry
   });
 
   ctx.canvas.addEventListener('mousemove', function(event) {
@@ -66,6 +75,13 @@ var main = function() {
   }
 
   function draw() {
+
+    // force off smoothing (it keeps turning itself back on)
+    ctx.imageSmoothingEnabled       = false;
+    ctx.mozImageSmoothingEnabled    = false;
+    ctx.msImageSmoothingEnabled     = false;
+    ctx.oImageSmoothingEnabled      = false;
+
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
     grid.draw();
@@ -79,8 +95,8 @@ var main = function() {
     var thisFrameTime = Date.now();
     var deltaTime = thisFrameTime - lastFrameTime;
     lastFrameTime = thisFrameTime;
-    update(deltaTime);
-    draw(deltaTime);
+    update(deltaTime / 1000);
+    draw();
     requestAnimationFrame(nextFrame);
   }
   nextFrame();

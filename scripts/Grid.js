@@ -6,16 +6,21 @@ function Grid(n_cols, n_rows, hex_class) {
 
   this.hex_class = hex_class;
 
+  this.draw_order = [];
+
   // build hexes
   this.n_cols = n_cols;
   this.n_rows = n_rows;
   this.hexes = [];
   for(var col = 0; col < (this.n_cols + this.n_rows); col++) {
     for(var row = 0; row < this.n_rows; row++) {
-      if(this.isValidAxial(col, row))
+      if(this.isValidAxial(col, row)) {
         this.hexes[col + (this.n_cols + this.n_rows)*row] = new hex_class(this, col, row);
+        this.draw_order.push(col + (this.n_cols + this.n_rows)*row);
+      }
     }
   }
+  this.draw_order.shuffle();
 
   // cache neighbourhoods
   for(var i = 0; i < this.hexes.length; i++)
@@ -65,8 +70,8 @@ Grid.prototype.pixelToHex = function(x, y) {
   y -= this.draw_y;
   
   // cube coordinates
-  var cx = (x - y*2/3) / Hex.prototype.draw_size;
-  var cz = y * 1.15 / Hex.prototype.draw_size;
+  var cx = 0.8 * (x - y*2/3) / Hex.prototype.draw_size / Hex.prototype.spacing;
+  var cz = 0.9 * y / Hex.prototype.draw_size / Hex.prototype.spacing;
   var cy = -cx - cz;
 
   // rounded cube coordinates
@@ -91,20 +96,22 @@ Grid.prototype.pixelToHex = function(x, y) {
 
 
 Grid.prototype.draw = function() {
-  for(var i = 0; i < this.hexes.length; i++)
-  {
-    var hex = this.hexes[i];
-    if(hex)
-      hex.draw();
-  }
+  for(var i = 0; i < this.draw_order.length; i++)
+    var hex = this.hexes[this.draw_order[i]].draw();
 };
 
 Grid.prototype.update = function(dt) {
 
   // global scaling
-  Hex.prototype.draw_size = Math.min(window.innerWidth / this.n_cols, window.innerHeight / this.n_rows);
-  Unit.prototype.draw_size = Hex.prototype.draw_size * 0.75;
-  this.draw_w = this.n_cols*this.hex_class.prototype.draw_size*3; // *2
+  var scale = Math.max(1, Math.round(Math.min(window.innerWidth / this.n_cols, window.innerHeight / this.n_rows) / 64));
+  Hex.prototype.draw_size = 64 * scale;
+
+
+  Unit.prototype.draw_w = 32 * scale;
+  Unit.prototype.draw_h = 64 * scale;
+
+
+  this.draw_w = this.n_cols*this.hex_class.prototype.draw_size*2;
   this.draw_h = this.n_rows*this.hex_class.prototype.draw_size*0.75;
 
   this.draw_x = (window.innerWidth - this.draw_w)*0.5;

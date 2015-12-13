@@ -68,12 +68,7 @@ turn.end = function() {
         var unit = units[i];
 
         if(unit.path.length > 0)
-        {
-          // wait for 1 second
-          var start_t = Date.now();
-          while(Date.now() - start_t < 300)  
-            dt = yield undefined;
-        }
+          yield * babysitter.waitForSeconds(1);
 
         // pop path nodes as far as we can
         while(unit.path.length > 0)
@@ -85,10 +80,7 @@ turn.end = function() {
             break;
           }
 
-          // wait for 0.1 seconds
-          var start_t = Date.now();
-          while(Date.now() - start_t < 100)  
-            dt = yield undefined;
+          yield * babysitter.waitForSeconds(0.1);
 
           // move to the next tile
           var hex = unit.path.shift();

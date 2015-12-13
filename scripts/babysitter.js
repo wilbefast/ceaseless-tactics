@@ -23,6 +23,16 @@ babysitter.countRunning = function()
   return babysitter.coroutines.length;
 }
 
+babysitter.waitForSeconds = function* (duration_s)
+{
+  var duration_ms = duration_s*1000;
+  var start_ms = Date.now();
+  var dt = 0.0;
+  while(Date.now() - start_ms < duration_ms)  
+    dt = yield undefined;
+  return dt;
+}
+
 babysitter.update = function(dt)
 {
   // this is where I'd really love J. Blow's 'remove' primitive...

@@ -4,6 +4,7 @@
   <script type="text/javascript">
     window.onload = function() {
       ctx = document.getElementsByTagName("canvas")[0].getContext("2d");
+
       main();
     }
   </script>
@@ -17,24 +18,58 @@
   <script type="text/javascript" src="scripts/Team.js" defer="true"></script>
   <script type="text/javascript" src="scripts/Unit.js" defer="true"></script>
   <script type="text/javascript" src="scripts/Turn.js" defer="true"></script>
+  <script type="text/javascript" src="scripts/ui.js" defer="true"></script>
   <script type="text/javascript" src="scripts/cursor.js" defer="true"></script>
   <script type="text/javascript" src="scripts/main.js" defer="true"></script>
 </head>
 
 <body style="margin:0;padding:0">
-  <canvas width="1280" height="720" style="width:100%;height:100%;background-color:cyan;cursor:none">
+  <canvas width="1280" height="720" style="width:100%;height:100%;background-color:#170312;cursor:none">
   </canvas>
 
   <div style="display:none">
-    <img id="img_hex" src="images/hex.png" />
+    <img id="img_hex_1" src="images/hex_1.png" />
+    <img id="img_hex_2" src="images/hex_2.png" />
+    <img id="img_hex_3" src="images/hex_3.png" />
+    <img id="img_hill_1" src="images/hill_1.png" />
+    <img id="img_hill_2" src="images/hill_2.png" />
+    <img id="img_hill_3" src="images/hill_3.png" />
+    <img id="img_hex_4" src="images/hex_4.png" />
     <img id="img_hex_highlight" src="images/hex_highlight.png" />
     <img id="img_hex_danger" src="images/hex_danger.png" />
     <img id="img_hex_combat" src="images/hex_combat.png" />
     <img id="img_hex_preview" src="images/hex_preview.png" />
-    <img id="img_unit_red_knight" src="images/unit_red_knight.png" />
-    <img id="img_unit_blue_knight" src="images/unit_blue_knight.png" />
-    <img id="img_unit_red_pawn" src="images/unit_red_pawn.png" />
-    <img id="img_unit_blue_pawn" src="images/unit_blue_pawn.png" />
+
+    <img id="img_unit_shadow" src="images/unit_shadow.png" />
+    <img id="img_unit_path_normal" src="images/unit_path_normal.png" />
+
+    <img id="img_unit_red_infantry_head" src="images/unit_red_infantry_head.png" />
+    <img id="img_unit_red_infantry_body" src="images/unit_red_infantry_body.png" />
+    <img id="img_unit_red_infantry_weapon" src="images/unit_red_infantry_weapon.png" />
+    <img id="img_unit_red_infantry_offhand" src="images/unit_red_infantry_offhand.png" />
+    <img id="img_unit_blue_infantry_head" src="images/unit_blue_infantry_head.png" />
+    <img id="img_unit_blue_infantry_body" src="images/unit_blue_infantry_body.png" />
+    <img id="img_unit_blue_infantry_weapon" src="images/unit_blue_infantry_weapon.png" />
+    <img id="img_unit_blue_infantry_offhand" src="images/unit_blue_infantry_offhand.png" />
+
+    <img id="img_unit_red_cavalry_head" src="images/unit_red_cavalry_body.png" />
+    <img id="img_unit_red_cavalry_body" src="images/unit_red_cavalry_body.png" />
+    <img id="img_unit_red_cavalry_weapon" src="images/unit_red_cavalry_weapon.png" />
+    <img id="img_unit_red_cavalry_offhand" src="images/unit_red_cavalry_offhand.png" />
+    <img id="img_unit_blue_cavalry_head" src="images/unit_blue_cavalry_body.png" />
+    <img id="img_unit_blue_cavalry_body" src="images/unit_blue_cavalry_body.png" />
+    <img id="img_unit_blue_cavalry_weapon" src="images/unit_blue_cavalry_weapon.png" />
+    <img id="img_unit_blue_cavalry_offhand" src="images/unit_blue_cavalry_offhand.png" />
+
+    <img id="img_unit_red_archer_head" src="images/unit_red_archer_head.png" />
+    <img id="img_unit_red_archer_body" src="images/unit_red_archer_body.png" />
+    <img id="img_unit_red_archer_weapon" src="images/unit_red_archer_weapon.png" />
+    <img id="img_unit_red_archer_offhand" src="images/unit_red_archer_offhand.png" />
+    <img id="img_unit_blue_archer_head" src="images/unit_blue_archer_head.png" />
+    <img id="img_unit_blue_archer_body" src="images/unit_blue_archer_body.png" />
+    <img id="img_unit_blue_archer_weapon" src="images/unit_blue_archer_weapon.png" />
+    <img id="img_unit_blue_archer_offhand" src="images/unit_blue_archer_offhand.png" />
+
     <img id="img_cursor" src="images/cursor.png" />
     <img id="img_button" src="images/button.png" />
     <img id="img_button_highlight" src="images/button_highlight.png" />

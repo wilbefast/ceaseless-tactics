@@ -41,31 +41,17 @@ cursor.moveTo = function(x, y) {
         if(is_charge)
           path.type = "charge"; 
       }
+      var sign = Math.sign(path_tip.draw_x - selectedUnit.hex.draw_x);
+      selectedUnit.facing = sign || selectedUnit.team.initialFacing;
     }
   }
 
   // hover over UI elements
-  turn.buttonHovered = cursor.isInRect(ctx.canvas.width - 256, 96, 256, 64);
-
+  ui.hover(cursor.x, cursor.y);
 }
 
 cursor.draw = function() {
-  ctx.drawImage(cursor.image, cursor.x, cursor.y, 32, 32);
-
-  if(cursor.path && cursor.path.length > 0)
-  {
-    ctx.beginPath();
-    var hex = cursor.selection.hex;
-    ctx.lineWidth = 5;
-    ctx.strokeStyle = (Unit.prototype.path_colour[this.path.type] || 'white');
-    ctx.moveTo(hex.draw_x + hex.draw_size*0.5, hex.draw_y + hex.draw_size*0.5);
-    for(var i = 0; i < cursor.path.length; i++)
-    {
-      hex = cursor.path[i];
-      ctx.lineTo(hex.draw_x + hex.draw_size*0.5, hex.draw_y + hex.draw_size*0.5);
-    }
-    ctx.stroke();
-  } 
+  ctx.drawImage(cursor.image, cursor.x, cursor.y, 32, 32); 
 }
 
 cursor.leftClick = function() {
@@ -108,8 +94,7 @@ cursor.leftClick = function() {
   }
 
   // press UI elements
-  if(turn.buttonHovered)
-    turn.end();
+  ui.leftClick(cursor.x, cursor.y);
 }
 
 cursor.rightClick = function() {
