@@ -15,6 +15,7 @@ function Unit(args) {
   this.damage = this.unitType.damage;
   this.hitpoints = this.unitType.hitpoints;
   this.attackRange = this.unitType.attackRange;
+  this.minRange = this.unitType.minRange;
 
   // same for all units
   this.max_moves = Math.max(1, Math.floor(this.speed / 4));
@@ -39,6 +40,7 @@ Unit.prototype.draw_h = 64
 
 
 Unit.prototype.shadow_image = document.getElementById("img_unit_shadow");
+Unit.prototype.shadow_selected_image = document.getElementById("img_unit_shadow_selected");
 
 Unit.prototype.path_normal_image = document.getElementById("img_unit_path_normal");
 Unit.prototype.path_normal_image_end = document.getElementById("img_unit_path_normal_end");
@@ -63,7 +65,8 @@ Unit.prototype.archer = {
   speed : 4,
   hitpoints : 10,
   damage : 10,
-  attackRange : 3
+  attackRange : 3,
+  minRange : 2,
 }
 
 Unit.prototype.cavalry = {
@@ -78,7 +81,7 @@ Unit.prototype.infantry = {
   name : "infantry",
   speed : 8,
   damage : 15,
-  hitpoints : 40,
+  hitpoints : 20,
   attackRange : 1
 }
 
@@ -120,20 +123,30 @@ Unit.prototype.draw = function(x, y) {
   }
 
   // always draw sprite
-  var off_y = Math.cos(this.breath*Math.PI*2);
+  var off_y = this.attacking ? 0 : Math.cos(this.breath*Math.PI*2);
   var bounce_y = 3*Math.sin(this.transition*Math.PI*2);
   ctx.save();
   ctx.scale(this.facing, 1);
-    ctx.drawImage(this.shadow_image, 
+    ctx.drawImage(cursor.selection == this ? this.shadow_selected_image : this.shadow_image, 
       this.facing*this.draw_x + x - (this.facing < 0 ? this.draw_w : 0), 
       this.draw_y + y + 40 - (this.hex.isHill ? 12 : 0), 
       this.draw_w, 
       this.draw_h / 3);
-    ctx.drawImage(this.weapon_image, 
-      this.facing*this.draw_x + x - (this.facing < 0 ? this.draw_w : 0), 
-      this.draw_y + y + bounce_y - 8 - (this.hex.isHill ? 12 : 0) - off_y, 
-      this.draw_w, 
-      this.draw_h);
+    ctx.save();
+      ctx.translate(
+        this.facing*this.draw_x + x - (this.facing < 0 ? this.draw_w : 0) - 18,
+        this.draw_y + y + bounce_y - 8 - (this.hex.isHill ? 12 : 0) - off_y - 52);
+      if(this.attacking)
+      {
+        ctx.translate(142, 64);
+        ctx.rotate(Math.PI/2);
+      }
+      ctx.drawImage(this.weapon_image, 
+        18, 
+        52, 
+        this.draw_w, 
+        this.draw_h);
+     ctx.restore();
     ctx.drawImage(this.body_image, 
       this.facing*this.draw_x + x - (this.facing < 0 ? this.draw_w : 0), 
       this.draw_y + y + bounce_y - 8 - (this.hex.isHill ? 12 : 0), 
@@ -144,15 +157,21 @@ Unit.prototype.draw = function(x, y) {
       this.draw_y + y + bounce_y - 8 - (this.hex.isHill ? 12 : 0) + off_y, 
       this.draw_w, 
       this.draw_h);
-    ctx.drawImage(this.offhand_image, 
-      this.facing*this.draw_x + x - (this.facing < 0 ? this.draw_w : 0), 
-      this.draw_y + y + bounce_y - 8 - (this.hex.isHill ? 12 : 0) - off_y, 
-      this.draw_w, 
-      this.draw_h);
+    if(this.hitpoints > this.unitType.hitpoints*0.5)
+      ctx.drawImage(this.offhand_image, 
+        this.facing*this.draw_x + x - (this.facing < 0 ? this.draw_w : 0), 
+        this.draw_y + y + bounce_y - 8 - (this.hex.isHill ? 12 : 0) - off_y, 
+        this.draw_w, 
+        this.draw_h);
   ctx.restore();
 
-
-  ctx.fillText(this.hitpoints+"", this.draw_x, this.draw_y);
+  if(this.isSelected())
+  {  
+    ctx.fillRect(this.draw_x - 1, this.draw_y + 64, 34, 4);
+    ctx.fillStyle = '#6bff21';
+    ctx.fillRect(this.draw_x, this.draw_y + 65, 32*this.hitpoints/this.unitType.hitpoints, 2);
+    ctx.fillStyle = 'black';
+  }
 }
 
 Unit.prototype.update = function(dt) {
@@ -235,4 +254,38 @@ Unit.prototype.pathingCost = function(hex) {
     return 1.9999;
   else
     return 1;
+}
+
+Unit.prototype.takeDamage = function(amount) {
+  this.hitpoints -= amount;
+  if(this.hitpoints <= 0)
+    this.purge = true;
+}
+
+Unit.prototype.canTarget = function(unit) {
+  if(!this.isEnemyOf(unit))
+    return false;
+  else if(this.hex.distanceTo(unit.hex) > this.attackRange)
+    return false;
+  else if(this.hex.distanceTo(unit.hex) < (this.minRange || 1))
+    return false;
+  else
+    return true;
+}
+
+Unit.prototype.setTarget = function(unit) {
+  this.target = unit;
+}
+
+Unit.prototype.hasTarget = function() {
+  return (this.target != null);
+}
+
+Unit.prototype.onPurge = function() {
+  this.hex.contents = null;
+  this.hex = null;
+}
+
+Unit.prototype.isSelected = function() {
+  return (this == cursor.selection);
 }

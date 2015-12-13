@@ -106,6 +106,9 @@ cursor.rightClick = function() {
   // order units
   if(cursor.selection)
   {
+    if(cursor.hex.contents && cursor.selection.canTarget(cursor.hex.contents))
+      cursor.selection.setTarget(cursor.hex.contents);
+
     cursor.selection = cursor.path = null;
   }
 }

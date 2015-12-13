@@ -45,8 +45,13 @@ turn.end = function() {
     var units = [];
     objects.map({ 
       orderBy : function(a, b) { 
-        // resolve all charges first
-        if(a.isCharging() && !b.isCharging())
+        // resolve attacks first
+        if(a.hasTarget() && !b.hasTarget())
+          return -a.speed;
+        else if(b.hasTarget() && !a.hasTarget())
+          return b.speed;
+        // resolve all charges next
+        else if(a.isCharging() && !b.isCharging())
           return -a.speed;
         else if(b.isCharging() && !a.isCharging())
           return b.speed;
@@ -63,12 +68,15 @@ turn.end = function() {
     });
 
     babysitter.add(function*(dt) {
+
+      yield * babysitter.waitForSeconds(1.0);
+
       for(var i = 0; i < units.length; i++)
       {
         var unit = units[i];
 
         if(unit.path.length > 0)
-          yield * babysitter.waitForSeconds(1);
+          yield * babysitter.waitForSeconds(0.5);
 
         // pop path nodes as far as we can
         while(unit.path.length > 0)
@@ -91,18 +99,53 @@ turn.end = function() {
             unit.setHex(hex);
             unit.path.shift();
           }
+          else
+            unit.path.length = 0;
         }
 
         // interrupt actions at target destination
         if(unit.isInCombat() && unit.isCharging())
+        {
+          unit.attacking = true;
+          yield * babysitter.waitForSeconds(0.2);
+          unit.attacking = false;
+
           unit.hex.mapToNeighbours(function(hex) {
-            if(hex.contents && hex.contents.isInCombat() && !hex.contents.isRetreating())
-              hex.contents.path.length = 0;
+            if(hex.contents && hex.contents.isInCombat() && unit.isEnemyOf(hex.contents))
+            {
+              if(!hex.contents.isRetreating())
+                hex.contents.path.length = 0;
+              hex.contents.takeDamage(unit.damage)
+            } 
           });
-    }
+        }
+      }
+
+      // clear all orders
+      objects.map({ 
+        f : function(object) {
+          object.setTarget(null);
+          object.path = [];
+        }
+      });
+
+      // switch back to the first team
       turn.currentTeam = Team.prototype.all[next_i];
+      if(turn.currentTeam.aiControlled)
+      {
+        // TODO - AI
+        turn.end();
+      }
     });
   }
   else
+  {
+    // switch to the next team
     turn.currentTeam = Team.prototype.all[next_i];
+    if(turn.currentTeam.aiControlled)
+    {
+      // TODO - AI
+      turn.end();
+    }
+  }
 }

@@ -9,6 +9,7 @@ function Team(args) {
   this.name = args.name;
   this.images = args.images;
   this.initialFacing = args.initialFacing;
+  this.aiControlled = args.aiControlled;
 
   return this;
 }
@@ -42,6 +43,7 @@ Team.red = new Team({
 
 Team.blue = new Team({
   name : "blue",
+  aiControlled : true,
   initialFacing : -1,
   images : {
     infantry : {
