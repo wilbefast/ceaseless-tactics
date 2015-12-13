@@ -22,19 +22,24 @@ function Unit(args) {
 Unit.prototype.draw_size = 40
 Unit.prototype.draw_size = 40
 
+Unit.prototype.path_colour = {
+  charge : 'violet',
+  retreat : 'cyan',
+}
+
 Unit.prototype.draw = function(x, y) {
   x = (x || 0);
   y = (y || 0);
 
   // draw path only if it's this unit's turn
-  if(turn.currentTeam == this.team)
+  if(!turn.currentTeam || (turn.currentTeam == this.team))
   {
     if(this.path.length > 0)
     {
       ctx.beginPath();
       var hex = this.hex;
       ctx.lineWidth = 2;
-      ctx.strokeStyle = this.path.isCharge ? 'red' : 'white';
+      ctx.strokeStyle = (this.path_colour[this.path.type] || 'white');
       ctx.moveTo(hex.draw_x + hex.draw_size*0.5, hex.draw_y + hex.draw_size*0.5);
       for(var i = 0; i < this.path.length; i++)
       {
@@ -72,7 +77,8 @@ Unit.prototype.canCharge = function(unit) {
   return this.isEnemyOf(unit)
 }
 
-Unit.prototype.isCombat = function(hex) {
+Unit.prototype.isInCombat = function(hex) {
+  hex = (hex || this.hex);
   var unit = this;
   if(hex.contents && unit.isEnemyOf(hex.contents))
     return true;
@@ -81,12 +87,29 @@ Unit.prototype.isCombat = function(hex) {
   });
 }
 
+Unit.prototype.isCharging = function() {
+  return (this.path.type == "charge");
+}
+
+Unit.prototype.isRetreating = function() {
+  return (this.path.type == "retreat");
+}
+
 Unit.prototype.canEnter = function(hex) {
-  return !(hex.contents);
+  if(hex.contents)
+    return false;
+  if(this.isRetreating())
+    return !this.isInCombat(hex);
+  else
+    return true;
 }
 
 Unit.prototype.canLeave = function(hex) {
-  return !this.isCombat(hex);
+  hex = (hex || this.hex);
+  if(this.path.type != "retreat")
+    return !this.isInCombat(hex);
+  else
+    return true;
 }
 
 Unit.prototype.pathingCost = function(hex) {

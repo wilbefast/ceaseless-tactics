@@ -15,6 +15,8 @@ function Hex(grid, col, row) {
   this.draw_x = 0;
   this.draw_y = 0;
 
+  this.hash = this.hash();
+
   return this;
 }
 
@@ -35,13 +37,15 @@ Hex.prototype.draw = function() {
     ctx.drawImage(this.image_highlight, this.draw_x, this.draw_y, this.draw_size, this.draw_size);
   else
     ctx.drawImage(this.image, this.draw_x, this.draw_y, this.draw_size, this.draw_size);
+  if(this.preview)
+    this.draw_preview();
 }
 
 Hex.prototype.draw_preview = function() {
-  if(!cursor.selection.canEnter(this))
+  if(!cursor.selection || !cursor.selection.canEnter(this))
     return;
   ctx.globalAlpha  = 0.5;
-  if(cursor.selection.isCombat(this))
+  if(cursor.selection.isInCombat(this))
     ctx.drawImage(this.image_combat, this.draw_x, this.draw_y, this.draw_size, this.draw_size);
   else
     ctx.drawImage(this.image_preview, this.draw_x, this.draw_y, this.draw_size, this.draw_size);
@@ -77,6 +81,19 @@ Hex.prototype.hasNeighbourSuchThat = function(predicate) {
       return true;
   }
   return false;
+}
+
+Hex.prototype.mapToNeighbours = function(f) {
+  for(var i = 0; i < this.neighbours.length; i++)
+  {
+    var neighbour = this.neighbours[i];
+    if(neighbour)
+    {
+      var result = f(neighbour);
+      if(result)
+        return result;
+    }
+  }
 }
 
 Hex.prototype.hash = function() {

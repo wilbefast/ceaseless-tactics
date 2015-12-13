@@ -18,48 +18,28 @@ cursor.moveTo = function(x, y) {
   if(new_hex != cursor.hex)
   {
     cursor.hex = new_hex;
-    if(cursor.selection && cursor.path && new_hex)
+    if(cursor.selection && (cursor.selection.team == turn.currentTeam) && cursor.path && new_hex)
     {
       var selectedUnit = cursor.selection;
       var path = cursor.path;
 
-      if(new_hex == selectedUnit.hex)
-      {
-        path.length = 0;
-        path.isCharge = false;
-      }
-      else for(i = 0; i < path.length; i++)
-      {
-        var old_hex = path[i];
-        if(old_hex == new_hex)
-        {
-          path.length = i;
-          path.isCharge = false;
-          break;
-        }
-      }
+      var new_path = grid.hexPath({
+        startHex : selectedUnit.hex, 
+        endHex : new_hex, 
+        unit : selectedUnit
+      });
 
+      path.length = 0;
+      for(var i = 0; i <= Math.min(new_path.length - 1, selectedUnit.max_moves); i++)
+        path[i] = new_path[i];
       var path_tip = (path.length == 0) ? selectedUnit.hex : path[path.length - 1];
-      if(!path.isCharge && !new_hex.contents && (selectedUnit.max_moves - path.length > 0) && path_tip.isNeighbourOf(new_hex))
+      if(path.type != "retreat")
       {
-        path.push(new_hex);
-        path.isCharge = new_hex.hasNeighbourSuchThat(function(hex) {
+        var is_charge = path_tip.hasNeighbourSuchThat(function(hex) {
           return hex.contents && selectedUnit.canCharge(hex.contents);
         });
-
-      }
-      else
-      {
-        var new_path = grid.hexPath(selectedUnit.hex, new_hex, selectedUnit);
-
-        path.length = 0;
-        for(var i = 0; i <= Math.min(new_path.length - 1, selectedUnit.max_moves); i++)
-          path[i] = new_path[i];
-        var path_tip = (path.length == 0) ? selectedUnit.hex : path[path.length - 1];
-        path.isCharge = path_tip.hasNeighbourSuchThat(function(hex) {
-          return hex.contents && selectedUnit.canCharge(hex.contents);
-        });
-
+        if(is_charge)
+          path.type = "charge"; 
       }
     }
   }
@@ -77,7 +57,7 @@ cursor.draw = function() {
     ctx.beginPath();
     var hex = cursor.selection.hex;
     ctx.lineWidth = 5;
-    ctx.strokeStyle = cursor.path.isCharge ? 'red' : 'white';
+    ctx.strokeStyle = (Unit.prototype.path_colour[this.path.type] || 'white');
     ctx.moveTo(hex.draw_x + hex.draw_size*0.5, hex.draw_y + hex.draw_size*0.5);
     for(var i = 0; i < cursor.path.length; i++)
     {
@@ -86,24 +66,44 @@ cursor.draw = function() {
     }
     ctx.stroke();
   } 
-
-  if(cursor.hex && cursor.selection)
-    grid.map(function(hex) {
-      if(hex.isWithinRangeOf(cursor.selection.hex, cursor.selection.max_moves))
-        hex.draw_preview();
-    });
 }
 
-cursor.press = function() {
+cursor.leftClick = function() {
   // select units
   if(cursor.hex)
   {
     var selection = cursor.hex.contents;
-    if(selection && selection.team == turn.currentTeam)
-    {
 
+    // deselect current unit
+    if(cursor.selection && selection != cursor.selection)
+      cursor.clearSelection();
+
+    if(selection)
+    {
       cursor.selection = selection;
-      cursor.path = cursor.selection.path = [];
+
+      // start a new path for units under my control
+      if(selection.team == turn.currentTeam)
+        cursor.path = selection.path = [];
+
+      // for the purpose of calculating the preview we need to set the path type
+      if(selection.isInCombat())
+        selection.path.type = "retreat";
+
+      // preview possible destinations for unit, whether allied or not
+      grid.map(function(hex) {
+        var preview_path = grid.hexPath({
+          startHex : selection.hex, 
+          endHex : hex, 
+          unit : selection
+        });
+        hex.preview = (preview_path.cost <= selection.max_moves);
+      });
+      
+    }
+    else
+    {
+      cursor.selection = cursor.path = null;
     }
   }
 
@@ -112,16 +112,21 @@ cursor.press = function() {
     turn.end();
 }
 
-cursor.release = function() {
+cursor.rightClick = function() {
+  // order units
   if(cursor.selection)
   {
-    if(cursor.path)
-    {
-      cursor.selection.setPath(cursor.path);
-      cursor.path = null;
-    }
+    cursor.selection = cursor.path = null;
+  }
+}
+
+cursor.clearSelection = function() {
+  if(cursor.selection)
+  {
+    cursor.selection.path = [];
     cursor.selection = null;
   }
+  cursor.path = [];
 }
 
 cursor.isInRect = function(x, y, w, h) {

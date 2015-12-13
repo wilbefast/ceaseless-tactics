@@ -42,12 +42,14 @@ var main = function() {
     cursor.moveTo(event.clientX - rect.left, event.clientY - rect.top);      
   }, false);
 
-  ctx.canvas.addEventListener('mousedown', function(event) {
-    cursor.press();
+  ctx.canvas.addEventListener('click', function(event) {
+    if(event.button == 0)
+      cursor.leftClick();
   }, false);
 
-  ctx.canvas.addEventListener('mouseup', function(event) {
-    cursor.release();
+  ctx.canvas.addEventListener('contextmenu', function(event) {
+    cursor.rightClick();
+    event.preventDefault();
   }, false);
 
   // ----------------------------------------------------------------------------

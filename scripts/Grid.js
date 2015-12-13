@@ -131,7 +131,12 @@ Grid.prototype.map = function(f) {
   }
 };
 
-Grid.prototype.hexPath = function(startHex, endHex, unit) {
+Grid.prototype.hexPath = function(args) {
+
+  var startHex = args.startHex;
+  var endHex = args.endHex;
+  var unit = args.unit;
+  var map = args.map;
 
   var _estimatePathCost = function(startHex, endHex) {
     return startHex.distanceTo(endHex);
@@ -183,12 +188,12 @@ Grid.prototype.hexPath = function(startHex, endHex, unit) {
         return;
 
       // find or create the neighbour state
-      var neighbourState = allStates[hex.hash()];
+      var neighbourState = allStates[hex.hash];
 
       if(!neighbourState)
       {
         neighbourState = _createPathState(hex, pathState.goalHex, pathState);
-        allStates[hex.hash()] = neighbourState;
+        allStates[hex.hash] = neighbourState;
       }
       // do nothing if the state is closed
       if (!neighbourState.closed)
@@ -225,6 +230,7 @@ Grid.prototype.hexPath = function(startHex, endHex, unit) {
     if(state.currentHex == endHex)
     {
       var path = [];
+      path.cost = state.currentCost;
       // read back and return the result
       while(state)
       {
@@ -239,6 +245,8 @@ Grid.prototype.hexPath = function(startHex, endHex, unit) {
 
     // remember to close the state now that all connections have been expanded
     state.closed = true;
+    if(map)
+      map(state.currentHex, state.currentCost);
 
     // keep the best closed state, just in case the target is inaccessible
     if (!fallback || _estimatePathCost(state.currentHex, endHex) < _estimatePathCost(fallback.currentHex, endHex))
@@ -252,6 +260,7 @@ Grid.prototype.hexPath = function(startHex, endHex, unit) {
 
   // fail!
   var path = [];
+  path.cost = Infinity;
   if(fallback)
   {
     // fallback on the best we can do
