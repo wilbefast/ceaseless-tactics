@@ -77,7 +77,7 @@ turn.end = function() {
 
         if(unit.path.length > 0 || unit.hasTarget())
           yield * babysitter.waitForSeconds(0.3);
-        if(unit.purge)
+        if(unit.purge || unit.hitpoints <= 0)
           break;
 
         // pop path nodes as far as we can
@@ -97,7 +97,7 @@ turn.end = function() {
             yield * babysitter.doForSeconds(0.2, function(t) {
               unit.transition = t;
             });
-            if(unit.purge)
+            if(unit.purge || unit.hitpoints <= 0)
               break;
 
             unit.setHex(hex);
@@ -124,7 +124,7 @@ turn.end = function() {
           // combat attack
           unit.doAttack(target);
           yield * babysitter.waitForSeconds(0.3);
-          if(unit.purge)
+          if(unit.purge || unit.hitpoints <= 0)
             break;
         }
         else if(unit.hasTarget())
@@ -132,7 +132,7 @@ turn.end = function() {
           // ranged attack
           unit.doAttack(target);
           yield * babysitter.waitForSeconds(0.3);
-          if(unit.purge)
+          if(unit.purge || unit.hitpoints <= 0)
             break;
         }
       }
@@ -149,8 +149,8 @@ turn.end = function() {
       turn.currentTeam = Team.prototype.all[next_i];
       if(turn.currentTeam.aiControlled)
       {
-        // TODO - AI
-        //turn.end();
+        ai.takeTurnForTeam(turn.currentTeam);
+        turn.end();
       }
     });
   }
@@ -160,8 +160,8 @@ turn.end = function() {
     turn.currentTeam = Team.prototype.all[next_i];
     if(turn.currentTeam.aiControlled)
     {
-      // TODO - AI
-      //turn.end();
+      ai.takeTurnForTeam(turn.currentTeam);
+      turn.end();
     }
   }
 }

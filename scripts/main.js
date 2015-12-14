@@ -31,7 +31,7 @@ var main = function() {
 
   // blue team units
   new Unit({
-    hex : grid.orthoToHex(2 /*grid.n_cols - 2*/, Math.floor(grid.n_rows / 2) - 2),
+    hex : grid.orthoToHex(grid.n_cols - 2, Math.floor(grid.n_rows / 2) - 2),
     team : Team.blue,
     type : Unit.prototype.infantry
   });

@@ -346,6 +346,34 @@ Unit.prototype.hasTarget = function() {
   return (this.target && !this.target.purge);
 }
 
+Unit.prototype.setPath = function(path) {
+  this.target = null;
+
+  if(path[0] == this.hex)
+    path.shift();
+
+  this.path.length = 0;
+  var totalCost = 0;
+  while(path.length > 0 && ((totalCost += this.pathingCost(path[0])) <= this.max_moves))
+    this.path.push(path.shift());
+  path = this.path;
+
+  var path_tip = (path.length == 0) ? this.hex : path[path.length - 1];
+  if(path.type != "retreat")
+  {
+    var self = this;
+    var is_charge = path_tip.hasNeighbourSuchThat(function(hex) {
+      return hex.contents && self.canCharge(hex.contents);
+    });
+    if(is_charge)
+      path.type = "charge";
+    else
+      path.type = null;
+  }
+  var sign = Math.sign(path_tip.draw_x - this.hex.draw_x);
+  this.facing = sign || this.team.initialFacing;
+}
+
 Unit.prototype.onPurge = function() {
   this.hex.contents = null;
   this.hex = null;

@@ -29,36 +29,12 @@ cursor.moveTo = function(x, y) {
       }
       else
       {
-        var path = cursor.path;
-
-        selectedUnit.setTarget(null);
-        selectedUnit.path = path;
-
-        var new_path = grid.hexPath({
+        cursor.path = grid.hexPath({
           startHex : selectedUnit.hex, 
           endHex : new_hex, 
           unit : selectedUnit
         });
-        new_path.shift();
-
-        path.length = 0;
-        var totalCost = 0;
-        while(new_path.length > 0 && ((totalCost += selectedUnit.pathingCost(new_path[0])) <= selectedUnit.max_moves))
-          path.push(new_path.shift());
-
-        var path_tip = (path.length == 0) ? selectedUnit.hex : path[path.length - 1];
-        if(path.type != "retreat")
-        {
-          var is_charge = path_tip.hasNeighbourSuchThat(function(hex) {
-            return hex.contents && selectedUnit.canCharge(hex.contents);
-          });
-          if(is_charge)
-            path.type = "charge";
-          else
-            path.type = null;
-        }
-        var sign = Math.sign(path_tip.draw_x - selectedUnit.hex.draw_x);
-        selectedUnit.facing = sign || selectedUnit.team.initialFacing;
+        selectedUnit.setPath(cursor.path);
       }
     }
   }
