@@ -13,7 +13,7 @@ var main = function() {
   turn.currentTeam = Team.red;
 
   // red team units
-  for(var i = 0; i < 4; i++)
+  for(var i = 0; i < 6; i++)
   {
     var hex = null;
     while(!hex)
@@ -31,7 +31,7 @@ var main = function() {
   }
 
   // blue team units
-  for(var i = 0; i < 4; i++)
+  for(var i = 0; i < 6; i++)
   {
     var hex = null;
     while(!hex)

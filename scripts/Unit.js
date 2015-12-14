@@ -68,25 +68,25 @@ Unit.prototype.path_images = {
 Unit.prototype.archer = {
   name : "archer",
   speed : 8,
-  hitpoints : 10,
+  hitpoints : 20,
   damage : 10,
-  attackRange : 3,
+  attackRange : 4,
   minRange : 2,
 }
 
 Unit.prototype.cavalry = {
   name : "cavalry",
-  speed : 20,
+  speed : 16,
   damage : 10,
-  hitpoints : 25,
+  hitpoints : 30,
   attackRange : 1
 }
 
 Unit.prototype.infantry = {
   name : "infantry",
-  speed : 12,
-  damage : 15,
-  hitpoints : 20,
+  speed : 10,
+  damage : 20,
+  hitpoints : 40,
   attackRange : 1
 }
 
