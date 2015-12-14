@@ -11,7 +11,7 @@ function Unit(args) {
   this.body_image = args.team.images[name].body;
   this.weapon_image = args.team.images[name].weapon;
   this.offhand_image = args.team.images[name].offhand;
-  this.speed = this.unitType.speed + Math.random()*0.1;
+  this.speed = this.unitType.speed;// + Math.random()*0.1;
   this.damage = this.unitType.damage;
   this.hitpoints = this.unitType.hitpoints;
   this.attackRange = this.unitType.attackRange;
@@ -377,6 +377,24 @@ Unit.prototype.setPath = function(path) {
 Unit.prototype.onPurge = function() {
   this.hex.contents = null;
   this.hex = null;
+
+  // check for win or for loss
+  var teams = {}
+  var team_count = 0;
+  objects.map({
+    f : function(object) {
+      if(object.hitpoints >= 0)
+      {
+        if(!teams[object.team.name])
+        {
+          teams[object.team.name] = true;
+          team_count++;
+        }
+      }
+    }
+  });
+  if(team_count < 2)
+    window.location = window.location;
 }
 
 Unit.prototype.isSelected = function() {

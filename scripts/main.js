@@ -13,6 +13,40 @@ var main = function() {
   turn.currentTeam = Team.red;
 
   // red team units
+  for(var i = 0; i < 4; i++)
+  {
+    var hex = null;
+    while(!hex)
+    {
+      hex = grid.orthoToHex(Math.floor(Math.random()*3), Math.floor(Math.random()*grid.n_rows));
+      if(hex.contents)
+        hex = null;
+    }
+    new Unit({
+      hex : hex,
+      team : Team.red,
+      type : Math.random() > 0.5 ? Unit.prototype.archer : Unit.prototype.infantry
+    });
+  }
+
+  // blue team units
+  for(var i = 0; i < 4; i++)
+  {
+    var hex = null;
+    while(!hex)
+    {
+      hex = grid.orthoToHex(grid.n_cols - Math.ceil(Math.random()*3), Math.floor(Math.random()*grid.n_rows));
+      if(hex.contents)
+        hex = null;
+    }
+    new Unit({
+      hex : hex,
+      team : Team.blue,
+      type : Math.random() > 0.5 ? Unit.prototype.archer : Unit.prototype.infantry
+    });
+  }
+  /*
+  // red team units
   new Unit({
     hex : grid.orthoToHex(1, Math.floor(grid.n_rows / 2) - 2),
     team : Team.red,
@@ -45,6 +79,7 @@ var main = function() {
     team : Team.blue,
     type : Unit.prototype.infantry
   });
+*/
 
   ctx.canvas.addEventListener('mousemove', function(event) {
     var rect = ctx.canvas.getBoundingClientRect();
