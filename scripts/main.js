@@ -22,10 +22,11 @@ var main = function() {
       if(hex.contents)
         hex = null;
     }
+    var type = (Math.random() > 0.5 ? Unit.prototype.infantry : (Math.random() > 0.5 ? Unit.prototype.archer : Unit.prototype.cavalry));
     new Unit({
       hex : hex,
       team : Team.red,
-      type : Math.random() > 0.5 ? Unit.prototype.archer : Unit.prototype.infantry
+      type : type
     });
   }
 
@@ -39,10 +40,11 @@ var main = function() {
       if(hex.contents)
         hex = null;
     }
+    var type = (Math.random() > 0.5 ? Unit.prototype.infantry : (Math.random() > 0.5 ? Unit.prototype.archer : Unit.prototype.cavalry));
     new Unit({
       hex : hex,
       team : Team.blue,
-      type : Math.random() > 0.5 ? Unit.prototype.archer : Unit.prototype.infantry
+      type : type
     });
   }
   /*

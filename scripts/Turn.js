@@ -78,7 +78,7 @@ turn.end = function() {
         if(unit.path.length > 0 || unit.hasTarget())
           yield * babysitter.waitForSeconds(0.3);
         if(unit.purge || unit.hitpoints <= 0)
-          break;
+          continue;
 
         // pop path nodes as far as we can
         while(unit.path.length > 0)
@@ -106,6 +106,8 @@ turn.end = function() {
           else
             unit.path.length = 0;
         }
+        if(unit.purge || unit.hitpoints <= 0)
+          continue;
 
         // interrupt actions at target destination
         if((unit.isInCombat() && unit.isCharging() || unit.hasTarget()))
@@ -125,7 +127,7 @@ turn.end = function() {
           unit.doAttack(target);
           yield * babysitter.waitForSeconds(0.3);
           if(unit.purge || unit.hitpoints <= 0)
-            break;
+            continue;
         }
         else if(unit.hasTarget())
         {
@@ -133,7 +135,7 @@ turn.end = function() {
           unit.doAttack(target);
           yield * babysitter.waitForSeconds(0.3);
           if(unit.purge || unit.hitpoints <= 0)
-            break;
+            continue;
         }
       }
 

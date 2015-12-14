@@ -67,7 +67,7 @@ Unit.prototype.path_images = {
 
 Unit.prototype.archer = {
   name : "archer",
-  speed : 4,
+  speed : 8,
   hitpoints : 10,
   damage : 10,
   attackRange : 3,
@@ -76,7 +76,7 @@ Unit.prototype.archer = {
 
 Unit.prototype.cavalry = {
   name : "cavalry",
-  speed : 16,
+  speed : 20,
   damage : 10,
   hitpoints : 25,
   attackRange : 1
@@ -84,7 +84,7 @@ Unit.prototype.cavalry = {
 
 Unit.prototype.infantry = {
   name : "infantry",
-  speed : 8,
+  speed : 12,
   damage : 15,
   hitpoints : 20,
   attackRange : 1
@@ -174,11 +174,12 @@ Unit.prototype.draw = function(x, y) {
         this.draw_y + y + bounce_y - 8 - (this.hex.isHill ? 12 : 0), 
         this.draw_w, 
         this.draw_h);
-      ctx.drawImage(this.head_image, 
-        this.facing*this.draw_x + x - (this.facing < 0 ? this.draw_w : 0), 
-        this.draw_y + y + bounce_y - 8 - (this.hex.isHill ? 12 : 0) + off_y, 
-        this.draw_w, 
-        this.draw_h);
+      if(this.hitpoints > 0 || this.pain > 3)
+        ctx.drawImage(this.head_image, 
+          this.facing*this.draw_x + x - (this.facing < 0 ? this.draw_w : 0), 
+          this.draw_y + y + bounce_y - 8 - (this.hex.isHill ? 12 : 0) + off_y, 
+          this.draw_w, 
+          this.draw_h);
       if(this.hitpoints > this.unitType.hitpoints*0.5)
         ctx.drawImage(this.offhand_image, 
           this.facing*this.draw_x + x - (this.facing < 0 ? this.draw_w : 0), 
