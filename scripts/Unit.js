@@ -87,7 +87,8 @@ Unit.prototype.cavalry = {
   speed : 16,
   damage : 10,
   hitpoints : 30,
-  attackRange : 1
+  attackRange : 1,
+  minRange : 1,
 }
 
 Unit.prototype.infantry = {
@@ -95,7 +96,8 @@ Unit.prototype.infantry = {
   speed : 10,
   damage : 20,
   hitpoints : 40,
-  attackRange : 1
+  attackRange : 1,
+  minRange : 1,
 }
 
 Unit.prototype.draw = function(x, y) {
@@ -301,10 +303,14 @@ Unit.prototype.isFallingBack = function() {
 Unit.prototype.canEnter = function(hex) {
   if(hex.contents)
     return false;
-  if(this.isRetreating())
+  if(this.isRetreating() || this.minRange > 1)
     return !this.isInCombat(hex);
   else
     return true;
+}
+
+Unit.prototype.canChargeHex = function(hex) {
+  return (this.canEnter(hex) && this.isInCombat(hex));
 }
 
 Unit.prototype.canLeave = function(hex) {
@@ -367,7 +373,9 @@ Unit.prototype.canTarget = function(unit) {
     return false;
   else if(this.hex.distanceTo(unit.hex) > this.attackRange)
     return false;
-  else if(this.hex.distanceTo(unit.hex) < (this.minRange || 1))
+  else if(this.hex.distanceTo(unit.hex) < this.minRange)
+    return false;
+  else if(this.isInCombat() && this.minRange > 1)
     return false;
   else
     return true;

@@ -80,15 +80,24 @@ cursor.leftClick = function() {
           endHex : hex, 
           unit : selection
         });
-        hex.canUnitMarch = true;
-        objects.map({ f : function(object) {
-          if(object.isEnemyOf(selection) && object.withinChargeRange(hex))
-          {
-            hex.canUnitMarch = false;
-            return true;
-          }
-        }});
-        hex.preview = (preview_path.cost <= selection.max_moves);
+        if(preview_path.cost <= selection.max_moves)
+        {
+          hex.canUnitMoveTo = true;
+          hex.canUnitMarch = true;
+            objects.map({ f : function(object) {
+              if(object.isEnemyOf(selection) && object.withinChargeRange(hex))
+              {
+                hex.canUnitMarch = false;
+                return true;
+              }
+            }
+          });
+        }
+        else
+          hex.canUnitMoveTo = false;
+        hex.canUnitTarget = hex.contents 
+          && hex.contents.isEnemyOf(cursor.selection) 
+          && hex.isWithinRangeOf(selection.hex, selection.attackRange);
       });
       
     }

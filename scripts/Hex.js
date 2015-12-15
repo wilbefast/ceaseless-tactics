@@ -41,6 +41,7 @@ Hex.prototype.hill_images = [
 
 Hex.prototype.image_highlight = document.getElementById("img_hex_highlight");
 Hex.prototype.image_preview_combat = document.getElementById("img_hex_preview_combat");
+Hex.prototype.image_preview_target = document.getElementById("img_hex_preview_target");
 Hex.prototype.image_preview_march = document.getElementById("img_hex_preview_march");
 Hex.prototype.image_preview_retreat = document.getElementById("img_hex_preview_retreat");
 Hex.prototype.image_preview_normal = document.getElementById("img_hex_preview_normal");
@@ -61,7 +62,7 @@ Hex.prototype.draw = function() {
     ctx.drawImage(this.image, this.draw_x, this.draw_y, this.draw_size, this.draw_size);
   if(this.isHill)
     ctx.drawImage(this.hill_image, this.draw_x, this.draw_y, this.draw_size, this.draw_size);
-  if(this.preview)
+  if(this.canUnitMoveTo || this.canUnitTarget)
     this.draw_preview();
 }
 
@@ -69,18 +70,17 @@ Hex.prototype.draw_preview = function() {
   if(!cursor.selection)
     return;
     
-  if(!cursor.selection.isInCombat() && !cursor.selection.canEnter(this))
-    return;
-
   ctx.globalAlpha  = 0.75;
-  if(cursor.selection.isInCombat(this))
-    ctx.drawImage(this.image_preview_combat, this.draw_x, this.draw_y, this.draw_size, this.draw_size);
-  else if(cursor.selection.isRetreating() || cursor.selection.isInCombat())
-    ctx.drawImage(this.image_preview_retreat, this.draw_x, this.draw_y, this.draw_size, this.draw_size);
-  else if(this.canUnitMarch)
-    ctx.drawImage(this.image_preview_march, this.draw_x, this.draw_y, this.draw_size, this.draw_size);
-  else
-    ctx.drawImage(this.image_preview_normal, this.draw_x, this.draw_y, this.draw_size, this.draw_size);
+    if(cursor.selection.canChargeHex(this))
+      ctx.drawImage(this.image_preview_combat, this.draw_x, this.draw_y, this.draw_size, this.draw_size);
+    else if((cursor.selection.isRetreating() || cursor.selection.isInCombat()) && this.canUnitMarch)
+      ctx.drawImage(this.image_preview_retreat, this.draw_x, this.draw_y, this.draw_size, this.draw_size);
+    else if(this.canUnitMarch)
+      ctx.drawImage(this.image_preview_march, this.draw_x, this.draw_y, this.draw_size, this.draw_size);
+    else if(this.canUnitMoveTo)
+      ctx.drawImage(this.image_preview_normal, this.draw_x, this.draw_y, this.draw_size, this.draw_size);
+    else if(this.canUnitTarget)
+      ctx.drawImage(this.image_preview_target, this.draw_x, this.draw_y, this.draw_size, this.draw_size);
   ctx.globalAlpha = 1;
 }
 
