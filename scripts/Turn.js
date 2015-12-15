@@ -50,6 +50,11 @@ turn.end = function() {
           return -a.speed;
         else if(b.hasTarget() && !a.hasTarget())
           return b.speed;
+        // resolve all fallbacks next
+        else if(a.isFallingBack() && !b.isFallingBack())
+          return -a.speed;
+        else if(b.isFallingBack() && !a.isFallingBack())
+          return b.speed;
         // resolve all charges next
         else if(a.isCharging() && !b.isCharging())
           return -a.speed;
@@ -74,6 +79,7 @@ turn.end = function() {
       for(var i = 0; i < units.length; i++)
       {
         var unit = units[i];
+        turn.currentUnit = unit;
 
         if(unit.path.length > 0 || unit.hasTarget())
           yield * babysitter.waitForSeconds(0.3);
@@ -148,6 +154,7 @@ turn.end = function() {
       });
 
       // switch back to the first team
+      turn.currentUnit = null;
       turn.currentTeam = Team.prototype.all[next_i];
       if(turn.currentTeam.aiControlled)
       {
@@ -159,6 +166,7 @@ turn.end = function() {
   else
   {
     // switch to the next team
+    turn.currentUnit = null;
     turn.currentTeam = Team.prototype.all[next_i];
     if(turn.currentTeam.aiControlled)
     {

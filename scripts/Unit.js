@@ -50,9 +50,13 @@ Unit.prototype.path_charge_image = document.getElementById("img_unit_path_charge
 Unit.prototype.path_charge_end_image = document.getElementById("img_unit_path_charge_end");
 Unit.prototype.path_retreat_image = document.getElementById("img_unit_path_retreat");
 Unit.prototype.path_retreat_end_image = document.getElementById("img_unit_path_retreat_end");
+Unit.prototype.path_march_image = document.getElementById("img_unit_path_march");
+Unit.prototype.path_march_end_image = document.getElementById("img_unit_path_march_end");
 
 Unit.prototype.attack_combat_image = document.getElementById("img_attack_combat");
 Unit.prototype.attack_ranged_image = document.getElementById("img_attack_ranged");
+Unit.prototype.attack_node_image = document.getElementById("img_attack_node");
+
 
 Unit.prototype.path_images = {
   charge : {
@@ -62,6 +66,10 @@ Unit.prototype.path_images = {
   retreat : {
     node : Unit.prototype.path_retreat_image,
     end : Unit.prototype.path_retreat_end_image
+  },
+  march : {
+    node : Unit.prototype.path_march_image,
+    end : Unit.prototype.path_march_end_image
   }
 }
 
@@ -95,7 +103,17 @@ Unit.prototype.draw = function(x, y) {
   y = (y || 0);
 
   // draw path only if it's this unit's turn
-  if(!turn.currentTeam || (turn.currentTeam == this.team))
+  var previewPath = false;
+  if(turn.currentTeam == this.team)
+    previewPath = true;
+  else if(!turn.currentTeam && !turn.currentUnit)
+    previewPath = true;
+  else if(!turn.currentTeam && !this.path && !turn.currentUnit.path)
+    previewPath = true;
+  else if(!turn.currentTeam && this.path && turn.currentUnit.path && this.path.type == turn.currentUnit.path.type)
+    previewPath = true;
+
+  if(previewPath)
   {
     // path
     if(this.path.length > 0)
@@ -138,6 +156,18 @@ Unit.prototype.draw = function(x, y) {
         ty + this.hex.draw_size*0.5 - (this.hex.isHill ? 12 : 0) - 11, 
         22, 
         22);
+
+      for(var i = 0; i < 1; i += 1.0/distance)
+      {
+        var nx = useful.lerp(this.hex.draw_x, this.target.hex.draw_x, i);
+        var ny = useful.lerp(this.hex.draw_y, this.target.hex.draw_y, i);
+        ctx.drawImage(this.attack_node_image, 
+          nx + this.hex.draw_size*0.5 - 4, 
+          ny + this.hex.draw_size*0.5 - (this.hex.isHill ? 12 : 0) - 4, 
+          9, 
+          9);
+      }
+      
     }
   }
 
@@ -264,6 +294,10 @@ Unit.prototype.isRetreating = function() {
   return (this.path.type == "retreat");
 }
 
+Unit.prototype.isFallingBack = function() {
+  return (this.path.type == "march");
+}
+
 Unit.prototype.canEnter = function(hex) {
   if(hex.contents)
     return false;
@@ -308,6 +342,7 @@ Unit.prototype.doAttack = function(target) {
     if(target.hex.isHill && !self.hex.isHill)
       damage *= 0.5;
     target.takeDamage(damage);
+    self.target = null;
   });
 }
 
@@ -362,14 +397,19 @@ Unit.prototype.setPath = function(path) {
   var path_tip = (path.length == 0) ? this.hex : path[path.length - 1];
   if(path.type != "retreat")
   {
-    var self = this;
-    var is_charge = path_tip.hasNeighbourSuchThat(function(hex) {
-      return hex.contents && self.canCharge(hex.contents);
-    });
-    if(is_charge)
-      path.type = "charge";
+    if(this.canMarchTo(path_tip))
+      path.type = "march";
     else
-      path.type = null;
+    {
+      var self = this;
+      var is_charge = path_tip.hasNeighbourSuchThat(function(hex) {
+        return hex.contents && self.canCharge(hex.contents);
+      });
+      if(is_charge)
+        path.type = "charge";
+      else
+        path.type = null;
+    }
   }
   var sign = Math.sign(path_tip.draw_x - this.hex.draw_x);
   this.facing = sign || this.team.initialFacing;
@@ -406,5 +446,38 @@ Unit.prototype.isSurrounded = function() {
   var self = this;
   return !this.hex.hasNeighbourSuchThat(function(hex) {
     return !self.isInCombat(hex);
-  })
+  });
+}
+
+Unit.prototype.pathingCostTo = function(hex) {
+  var path = grid.hexPath({
+    startHex : this.hex, 
+    endHex : hex, 
+    unit : this
+  });
+  return path.cost;
+}
+
+Unit.prototype.withinMoveRange = function(hex) {
+  return (this.pathingCostTo(hex) <= this.max_moves);
+}
+
+Unit.prototype.withinChargeRange = function(hex) {
+  var self = this;
+  return hex.hasNeighbourSuchThat(function(neighbour_hex) {
+    return (self.withinMoveRange(neighbour_hex));
+  });
+}
+
+Unit.prototype.canMarchTo = function(hex) {
+  var canMarch = true;
+  var self = this;
+  objects.map({ f : function(object) {
+    if(object.isEnemyOf(self) && object.withinChargeRange(hex))
+    {
+      canMarch = false;
+      return true;
+    }
+  }});
+  return canMarch;
 }

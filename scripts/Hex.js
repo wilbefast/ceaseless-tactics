@@ -41,6 +41,7 @@ Hex.prototype.hill_images = [
 
 Hex.prototype.image_highlight = document.getElementById("img_hex_highlight");
 Hex.prototype.image_preview_combat = document.getElementById("img_hex_preview_combat");
+Hex.prototype.image_preview_march = document.getElementById("img_hex_preview_march");
 Hex.prototype.image_preview_retreat = document.getElementById("img_hex_preview_retreat");
 Hex.prototype.image_preview_normal = document.getElementById("img_hex_preview_normal");
 
@@ -76,6 +77,8 @@ Hex.prototype.draw_preview = function() {
     ctx.drawImage(this.image_preview_combat, this.draw_x, this.draw_y, this.draw_size, this.draw_size);
   else if(cursor.selection.isRetreating() || cursor.selection.isInCombat())
     ctx.drawImage(this.image_preview_retreat, this.draw_x, this.draw_y, this.draw_size, this.draw_size);
+  else if(this.canUnitMarch)
+    ctx.drawImage(this.image_preview_march, this.draw_x, this.draw_y, this.draw_size, this.draw_size);
   else
     ctx.drawImage(this.image_preview_normal, this.draw_x, this.draw_y, this.draw_size, this.draw_size);
   ctx.globalAlpha = 1;
