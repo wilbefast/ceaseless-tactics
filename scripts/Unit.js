@@ -40,6 +40,7 @@ Unit.prototype.draw_w = 32
 Unit.prototype.draw_h = 64
 
 Unit.prototype.surrounded_image = document.getElementById("img_unit_surrounded");
+Unit.prototype.flanked_image = document.getElementById("img_unit_flanked");
 
 Unit.prototype.shadow_image = document.getElementById("img_unit_shadow");
 Unit.prototype.shadow_selected_image = document.getElementById("img_unit_shadow_selected");
@@ -230,6 +231,17 @@ Unit.prototype.draw = function(x, y) {
       16, 
       16);
   }
+  // frontier
+  /*
+  if(this.isFlanked())
+  {
+    ctx.drawImage(this.flanked_image, 
+      this.draw_x + this.hex.draw_size*0.5 - 24, 
+      this.draw_y + this.hex.draw_size*0.5 - (this.hex.isHill ? 12 : 0) - 24, 
+      16, 
+      16);
+  }
+  */
 
   if(this.isSelected())
   {  
@@ -282,9 +294,9 @@ Unit.prototype.isInCombat = function(hex) {
   hex = (hex || this.hex);
   var unit = this;
   if(hex.contents && unit.isEnemyOf(hex.contents))
-    return true;
+    return hex.contents;
   return hex.hasNeighbourSuchThat(function(hex) {
-    return hex.contents && unit.isEnemyOf(hex.contents);
+    return hex.contents && unit.isEnemyOf(hex.contents) && hex.contents;
   });
 }
 
@@ -330,42 +342,39 @@ Unit.prototype.pathingCost = function(hex) {
     return 1;
 }
 
-Unit.prototype.doAttack = function(target) {
+Unit.prototype.doAttack = function* (target) {
   if(!target || !this.canTarget(target))
     return;
 
-  var self = this;
-  babysitter.add(function*(dt) {
-    self.attacking = true;
-    yield * babysitter.waitForSeconds(0.2);
-    if(self.purge)
-      return;
-    self.attacking = false;
+  this.attacking = true;
+  yield * babysitter.waitForSeconds(0.2);
+  if(this.purge)
+    return;
+  this.attacking = false;
 
-    var damage = self.damage;
-    if(target.isSurrounded())
-      damage *= 2;
-    if(target.hex.isHill && !self.hex.isHill)
-      damage *= 0.5;
-    target.takeDamage(damage);
-    self.target = null;
-  });
+  var damage = this.damage;
+  if(target.isSurrounded())
+    damage *= 2;
+  if(target.hex.isHill && !this.hex.isHill)
+    damage *= 0.5;
+  this.target = null;
+  
+  yield * target.takeDamage(damage);
 }
 
-Unit.prototype.takeDamage = function(amount) {
+Unit.prototype.takeDamage = function*(amount) {
   this.hitpoints -= amount;
 
   this.pain = 7;
   var self = this;
-  babysitter.add(function*(dt) {
-    while(self.pain > 0)
-    {
-      yield * babysitter.waitForSeconds(0.1);
-      self.pain--;
-    }
-    if(self.hitpoints <= 0)
-      self.purge = true;
-  });
+
+  while(self.pain > 0)
+  {
+    yield * babysitter.waitForSeconds(0.1);
+    self.pain--;
+  }
+  if(self.hitpoints <= 0)
+    self.purge = true;
 }
 
 Unit.prototype.canTarget = function(unit) {
@@ -455,6 +464,18 @@ Unit.prototype.isSurrounded = function() {
   return !this.hex.hasNeighbourSuchThat(function(hex) {
     return !self.isInCombat(hex);
   });
+}
+
+Unit.prototype.isFlanked = function() {
+  if(!this.isInCombat())
+    return false;
+  var self = this;
+  var combatNeighbours = 0
+  this.hex.mapToNeighbours(function(hex) {
+    if(self.isInCombat(hex))
+      combatNeighbours++;
+  });
+  return (combatNeighbours > 4);
 }
 
 Unit.prototype.pathingCostTo = function(hex) {

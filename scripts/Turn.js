@@ -63,9 +63,9 @@ turn.end = function() {
         // resolve all retreats next
         else if(a.isRetreating() && !b.isRetreating())
           return -a.speed;
-        // resolve all moves last
         else if(b.isRetreating() && !a.isRetreating())
           return b.speed;
+        // resolve all moves last
         else
           return b.speed - a.speed; 
       },
@@ -130,16 +130,16 @@ turn.end = function() {
           });
 
           // combat attack
-          unit.doAttack(target);
-          yield * babysitter.waitForSeconds(0.3);
+          yield * unit.doAttack(target);
+          yield * babysitter.waitForSeconds(0.1);
           if(unit.purge || unit.hitpoints <= 0)
             continue;
         }
         else if(unit.hasTarget())
         {
           // ranged attack
-          unit.doAttack(target);
-          yield * babysitter.waitForSeconds(0.3);
+          yield * unit.doAttack(target);
+          yield * babysitter.waitForSeconds(0.1);
           if(unit.purge || unit.hitpoints <= 0)
             continue;
         }
